@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,13 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flex Layout</title>
-    <link rel="stylesheet" href="./index.css">
-
     <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
         .container {
             width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
             display: flex;
+            height: 500px;
+        }
+
+        .left, .right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .left {
@@ -23,6 +35,10 @@
         .right {
             background-color: blue;
             flex-grow: 2;
+        }
+
+        h1 {
+            color: white;
         }
     </style>
 </head>
