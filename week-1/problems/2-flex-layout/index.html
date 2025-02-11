@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flex Layout</title>
+    <title>Grid Layout</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            justify-items: center;
             align-items: center;
             height: 100vh;
             margin: 0;
@@ -16,25 +16,23 @@
 
         .container {
             width: 1200px;
-            max-width: 100%;
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
             height: 500px;
         }
 
         .left, .right {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: grid;
+            place-items: center; /* centers content both vertically and horizontally */
         }
 
         .left {
             background-color: red;
-            flex-grow: 1;
         }
 
         .right {
             background-color: blue;
-            flex-grow: 2;
         }
 
         h1 {
