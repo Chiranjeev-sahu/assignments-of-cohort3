@@ -6,7 +6,10 @@
 */
 
 function countVowels(str) {
-    // Your code here
+    return str.toLowerCase().split('').reduce((count,char)=>{
+      return 'aeiou'.includes(char)?count+1:count;
+    },0)
+
 }
 
 module.exports = countVowels;
