@@ -16,6 +16,78 @@
   Once you've implemented the logic, test your code by running
 */
 
-class Calculator {}
+class Calculator {
+  constructor(){
+    this.result=0;
+  }
+  add(value){
+    
+    value = String(value).trim(); 
 
+    if (value === "" || isNaN(value)) {
+      throw new Error("Invalid input: Please provide a valid number");
+    }
+
+    this.result += Number(value); // Convert and add to result
+  }
+  subtract(value){
+    value = String(value).trim(); 
+
+    if (value === "" || isNaN(value)) {
+      throw new Error("Invalid input: Please provide a valid number");
+    }
+
+    this.result -= Number(value); // Convert and add to result
+ 
+  }
+  multiply(value){
+    value = String(value).trim(); 
+
+    if (value == null || isNaN(value) || value === "") {
+      throw new Error("Invalid input: Please provide a valid number");
+    }
+
+    this.result *= Number(value); // Convert and add to result
+ 
+  }
+  divide(value){
+    value = String(value).trim(); 
+
+    if (value == null || isNaN(value) || value === "" ) {
+      throw new Error("Invalid input: Please provide a valid number");
+    }
+    let numValue = Number(value);  // Convert to a number
+
+    if(numValue===0){      
+      throw new Error("Divide By Zero Error: Cannot divide by zero");
+    }
+
+    this.result /= Number(value); // Convert and add to result
+     
+  }
+  clear(){
+    this.result=0;
+  }
+  getResult(){
+    return this.result;
+  }
+  calculate(expression){
+    if (typeof expression !== "string") {
+      throw new Error("Invalid input: Expression must be a string");
+    }
+    expression=expression.replace(/\s+/g,"")
+    if (!/^[\d+\-*/().\s]+$/.test(expression)) {
+      throw new Error("Invalid input: Expression contains invalid characters");
+    }
+    try {
+      this.result= eval(expression);  // Evaluate the cleaned expression
+      if (!isFinite(this.result)) { // Check for division by zero
+        throw new Error("Divide By Zero Error: Cannot divide by zero");
+      }
+    }
+    catch (error) {
+      throw new Error("Invalid mathematical expression");
+    }
+  }
+}
 module.exports = Calculator;
