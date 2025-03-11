@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        transition: background-color 0.3s ease;
+    }
+    
+    .container {
+        border: 2px solid black;
+        border-radius: 20px;
+        width: 500px;
+        padding: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        background-color: rgb(255, 255, 255);
+    }
+    
+    .row {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+    }
+    
+    button {
+        background-color: white;
+        border: 2px solid black;
+        border-radius: 15px;
+        padding: 8px 15px;
+        min-width: 80px;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    
+    #red { background-color: red; color: white; }
+    #green { background-color: green; color: white; }
+    #purple { background-color: purple; color: white; }
+    #blue { background-color: blue; color: white; }
+    #yellow { background-color: yellow; color: black; }
+    #gray { background-color: gray; color: white; }
+    #cyan { background-color: cyan; color: black; }
+    
+    .custom-color {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .color-input {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+</style>
+<body>
+    <div class="container">
+        <div class="row">
+            <button id="red">Red</button>
+            <button id="green">Green</button>
+            <button id="purple">Purple</button>
+            <button id="blue">Blue</button>
+        </div>
+        <div class="row">
+            <button id="yellow">Yellow</button>
+            <button id="gray">Gray</button>
+            <button id="cyan">Cyan</button>
+        </div>
+        <div class="custom-color">
+            <h3>Add Custom Color</h3>
+            <div class="color-input">
+                <input type="text" id="colorName" placeholder="Color name">
+                <button id="addColor">Add Color</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const buttons = document.querySelectorAll("button");
+        buttons.forEach(button => {
+            button.addEventListener("click", () => {
+                const color = button.id; // Get the ID as color
+                document.body.style.backgroundColor = color;
+            });
+        });
+
+        const addColorBtn = document.getElementById("addColor");
+        const colorNameInput = document.getElementById("colorName");
+
+        addColorBtn.addEventListener("click", () => {
+            const colorName = colorNameInput.value.trim().toLowerCase(); 
+
+            if (colorName) {
+                const newColorBtn = document.createElement("button");
+                newColorBtn.textContent = colorName;
+                newColorBtn.style.backgroundColor = colorName;
+                newColorBtn.style.color = getContrastColor(colorName);
+                newColorBtn.addEventListener("click", () => {
+                    document.body.style.backgroundColor = colorName;
+                });
+                document.querySelectorAll(".row")[1].appendChild(newColorBtn);
+                colorNameInput.value = ""; // Clear the input
+            } else {
+                alert("Please enter a color name!");
+            }
+        });
+
+        function getContrastColor(color) {
+            // Simple contrast logic: Use black for light colors, white for dark colors
+            const lightColors = ["yellow", "cyan", "white", "pink", "orange"];
+            return lightColors.includes(color) ? "black" : "white";
+        }
+    </script>
+</body>
+</html>
