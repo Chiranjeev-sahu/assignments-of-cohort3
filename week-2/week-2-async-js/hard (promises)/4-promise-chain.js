@@ -27,7 +27,9 @@ function calculateTime(t1, t2, t3) {
   return wait1(t1)
     .then(() => wait2(t2))
     .then(() => wait3(t3))
-    .then(() => Date.now());
+    .then(() => Date.now()-start);
 }
-
+calculateTime(1, 2, 3).then(time => {
+    console.log(`Promise.all Time: ${time} ms`);
+});
 module.exports = calculateTime;
