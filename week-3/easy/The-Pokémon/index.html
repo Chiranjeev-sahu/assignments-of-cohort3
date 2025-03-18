@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokémon Cards</title>
+</head>
+<body>
+    <h1>Pokémon Card Viewer</h1>
+    <label for="numCards">Number of Pokémon Cards:</label>
+    <input type="number" id="numCards" min="1" max="20">
+
+    <label for="category">Select Category:</label>
+    <select id="category">
+        <option value="fire">Fire</option>
+        <option value="water">Water</option>
+        <option value="grass">Grass</option>
+        <option value="electric">Electric</option>
+    </select>
+
+    <button id="fetchBtn">Get Pokémon</button>
+
+    <div id="pokemonContainer"></div>
+
+    <script>
+        document.getElementById('fetchBtn').addEventListener('click', async () => {
+            const numCards = document.getElementById('numCards').value;
+            const category = document.getElementById('category').value;
+            const container = document.getElementById('pokemonContainer');
+            container.innerHTML = ''; // Clear previous results
+
+            for (let i = 0; i < numCards; i++) {
+                const randomId = Math.floor(Math.random() * 500) + 1; // Random Pokémon ID
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`);
+                const data = await response.json();
+
+                const pokemonCard = document.createElement('div');
+                pokemonCard.innerHTML = `
+                    <h3>${data.name.toUpperCase()}</h3>
+                    <img src="${data.sprites.front_default}" alt="${data.name}" />
+                    <p>Type: ${data.types.map(type => type.type.name).join(', ')}</p>
+                `;
+
+                // Filter Pokémon by category
+                if (data.types.some(type => type.type.name === category)) {
+                    container.appendChild(pokemonCard);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

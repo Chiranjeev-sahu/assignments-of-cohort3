@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Builder</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { display: flex; gap: 20px; }
+        .form-area, .preview-area { width: 50%; border: 2px solid #ddd; padding: 15px; border-radius: 8px; }
+        .field { margin-bottom: 10px; }
+        .preview-area { background-color: #f9f9f9; }
+        .preview-item { margin-bottom: 10px; padding: 5px 0; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Form Builder</h1>
+    <div class="container">
+        <div class="form-area">
+            <label for="field-type">Select Field Type:</label>
+            <select id="field-type">
+                <option value="text">Text Input</option>
+                <option value="checkbox">Checkbox</option>
+                <option value="radio">Radio Button</option>
+            </select>
+            <br>
+            <label for="field-label">Enter Field Label:</label>
+            <input type="text" id="field-label" placeholder="e.g., Full Name">
+            <br>
+            <button id="add-field">Add Field</button>
+        </div>
+
+        <div class="preview-area" id="preview-area">
+            <h2>Preview Area</h2>
+        </div>
+    </div>
+
+    <script>
+        const fieldType = document.getElementById('field-type');
+        const fieldLabel = document.getElementById('field-label');
+        const addFieldButton = document.getElementById('add-field');
+        const previewArea = document.getElementById('preview-area');
+
+        addFieldButton.addEventListener('click', () => {
+            const type = fieldType.value;
+            const label = fieldLabel.value.trim();
+
+            if (!label) {
+                alert("Please provide a label for the field.");
+                return;
+            }
+
+            const fieldContainer = document.createElement('div');
+            fieldContainer.classList.add('preview-item');
+
+            const labelElement = document.createElement('label');
+            labelElement.textContent = label + ": ";
+
+            let inputElement;
+            if (type === 'text') {
+                inputElement = document.createElement('input');
+                inputElement.type = 'text';
+            } else if (type === 'checkbox') {
+                inputElement = document.createElement('input');
+                inputElement.type = 'checkbox';
+            } else if (type === 'radio') {
+                inputElement = document.createElement('input');
+                inputElement.type = 'radio';
+                inputElement.name = 'radio-group';  // Group radio buttons together
+            }
+
+            fieldContainer.appendChild(labelElement);
+            fieldContainer.appendChild(inputElement);
+            previewArea.appendChild(fieldContainer);
+
+            // Clear input fields after adding
+            fieldLabel.value = "";
+        });
+    </script>
+</body>
+</html>
