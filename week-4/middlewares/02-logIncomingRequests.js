@@ -4,7 +4,10 @@ const express = require('express');
 const app = express();
 
 function logRequests(req, res, next) {
-    // write the logic for request log here
+    const method=req.method;
+    const url=req.url;
+    console.log(`${method} request to ${url} - ${new Date().toDateString()}`);
+    next();
 }
 
 app.use(logRequests);
@@ -12,5 +15,5 @@ app.use(logRequests);
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Hello, world!' });
 });
-
-module.exports = app;
+app.listen(3000);
+// module.exports = app;
