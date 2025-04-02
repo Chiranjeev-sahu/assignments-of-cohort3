@@ -1,75 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Taskify - Task Manager</title>
     <style>
-        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; background-color: #f4f4f4; }
-        h1 { margin-bottom: 20px; }
-        .board { display: flex; gap: 20px; width: 80%; }
-        .column { background-color: #fff; border: 2px solid #ddd; border-radius: 8px; width: 30%; padding: 10px; min-height: 300px; }
-        .task { background-color: #d1e7dd; margin: 8px 0; padding: 10px; border-radius: 5px; cursor: grab;box-shadow: 1px 2px 2px rgb(42, 43, 42);;}
-        .column-header { text-align: center; font-weight: bold; margin-bottom: 10px; }
-        .add-task { margin-top: 20px; display: flex; gap: 10px; }
-        input, button { padding: 8px 15px; border-radius: 5px; border: 1px solid #ccc; }
-        button { background-color: #4CAF50; color: #fff; cursor: pointer; }
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        background-color: #e8e2e2;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      
+      .board {
+        display: flex;
+        gap: 20px;
+        width: 80%;
+        
+      }
+      .column {
+        background-color: #aba4a45a;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        width: 30%;
+        padding: 10px;
+        min-height: 300px;
+
+        box-shadow: 0px 9px 7px rgb(156, 156, 155);
+      }
+      .task {
+        background-color: #f2f2f2;
+        margin: 8px 0;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: grab;
+        box-shadow: 1px 2px 2px rgb(42, 43, 42);
+      }
+      .column-header {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .add-task {
+        margin-top: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        gap: 10px;
+      }
+      input,
+      button {
+        padding: 8px 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      button {
+        background-color: #4caf50;
+        color: #fff;
+        cursor: pointer;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Taskify - Task Manager</h1>
 
     <div class="add-task">
-        <input type="text" id="taskInput" placeholder="Enter task...">
-        <button onclick="addTask()">Add Task</button>
+      <input type="text" id="taskInput" placeholder="Enter task..." />
+      <button onclick="addTask()">Add Task</button>
     </div>
 
     <div class="board">
-        <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <div class="column-header">To Do</div>
-        </div>
-        <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <div class="column-header">In Progress</div>
-        </div>
-        <div class="column" id="completed" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <div class="column-header">Completed</div>
-        </div>
+      <div
+        class="column"
+        id="todo"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+      >
+        <div class="column-header">To Do</div>
+      </div>
+      <div
+        class="column"
+        id="in-progress"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+      >
+        <div class="column-header">In Progress</div>
+      </div>
+      <div
+        class="column"
+        id="completed"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+      >
+        <div class="column-header">Completed</div>
+      </div>
     </div>
 
     <script>
-        let taskId = 0; 
+      let taskId = 0;
 
-        function addTask() {
-            const taskInput = document.getElementById('taskInput');
-            const taskText = taskInput.value.trim();
-            if (!taskText) return; 
+      function addTask() {
+        const taskInput = document.getElementById("taskInput");
+        const taskText = taskInput.value.trim();
+        if (!taskText) return;
 
-            const task = document.createElement('div');
-            task.className = 'task';
-            task.draggable = true;
-            task.id = `task-${taskId++}`;
-            task.textContent = taskText;
+        const task = document.createElement("div");
+        task.className = "task";
+        task.draggable = true;
+        task.id = `task-${taskId++}`;
+        task.textContent = taskText;
 
-            task.ondragstart = drag;
+        task.ondragstart = drag;
 
-            document.getElementById('todo').appendChild(task);
-            taskInput.value = '';
-        }
+        document.getElementById("todo").appendChild(task);
+        taskInput.value = "";
+      }
 
-        function allowDrop(event) {
-            event.preventDefault();
-        }
+      function allowDrop(event) {
+        event.preventDefault();
+      }
 
-        function drag(event) {
-            event.dataTransfer.setData('text', event.target.id);
-        }
+      function drag(event) {
+        event.dataTransfer.setData("text", event.target.id);
+      }
 
-        function drop(event) {
-            event.preventDefault();
-            const taskId = event.dataTransfer.getData('text');
-            const task = document.getElementById(taskId);
-            event.target.appendChild(task);
-        }
+      function drop(event) {
+        event.preventDefault();
+        const taskId = event.dataTransfer.getData("text");
+        const task = document.getElementById(taskId);
+        event.target.appendChild(task);
+      }
     </script>
-</body>
+  </body>
 </html>
