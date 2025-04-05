@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taskify - Task Manager</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        background-color: #e8e2e2;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      
+      .board {
+        display: flex;
+        gap: 20px;
+        width: 80%;
+        
+      }
+      .column {
+        background-color: #aba4a45a;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        width: 30%;
+        padding: 10px;
+        min-height: 300px;
+
+        box-shadow: 0px 9px 7px rgb(156, 156, 155);
+      }
+      .task {
+        background-color: #f2f2f2;
+        margin: 8px 0;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: grab;
+        box-shadow: 1px 2px 2px rgb(42, 43, 42);
+      }
+      .column-header {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .add-task {
+        margin-top: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        gap: 10px;
+      }
+      input,
+      button {
+        padding: 8px 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      button {
+        background-color: #4caf50;
+        color: #fff;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Taskify - Task Manager</h1>
+
+    <div class="add-task">
+      <input type="text" id="taskInput" placeholder="Enter task..." />
+      <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="board">
+      <div
+        class="column"
+        id="todo"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+      >
+        <div class="column-header">To Do</div>
+      </div>
+      <div
+        class="column"
+        id="in-progress"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+      >
+        <div class="column-header">In Progress</div>
+      </div>
+      <div
+        class="column"
+        id="completed"
+        ondrop="drop(event)"
+        ondragover="allowDrop(event)"
+      >
+        <div class="column-header">Completed</div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE_URL = '__API_BASE_URL__';
+
+      async function loadTasks() {
+          try {
+              const response = await fetch(`${API_BASE_URL}/tasks`);
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const tasks = await response.json();
+
+              tasks.forEach(task => {
+                  const taskElement = document.createElement('div');
+                  taskElement.className = 'task';
+                  taskElement.draggable = true;
+                  taskElement.id = task.id;
+                  taskElement.textContent = task.text;
+                  taskElement.ondragstart = drag;
+
+                  const columnId = task.status;
+                  const columnElement = document.getElementById(columnId);
+                  if (columnElement) {
+                      columnElement.appendChild(taskElement);
+                  } else {
+                      console.error(`Column with ID '${columnId}' not found.`);
+                  }
+              });
+          } catch (error) {
+              console.error("Error fetching tasks:", error);
+          }
+      }
+
+      async function addTask() {
+          const taskInput = document.getElementById('taskInput');
+          const taskText = taskInput.value.trim();
+
+          if (!taskText) {
+              alert("Please enter a task!");
+              return;
+          }
+
+          try {
+              const response = await fetch(`${API_BASE_URL}/tasks`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ text: taskText })
+              });
+
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+
+              const newTask = await response.json();
+
+              const taskElement = document.createElement('div');
+              taskElement.className = 'task';
+              taskElement.draggable = true;
+              taskElement.id = newTask.id;
+              taskElement.textContent = newTask.text;
+              taskElement.ondragstart = drag;
+
+              const todoColumn = document.getElementById('todo');
+              if (todoColumn) {
+                  todoColumn.appendChild(taskElement);
+              } else {
+                  console.error("Column with ID 'todo' not found.");
+              }
+
+              taskInput.value = ''; 
+
+          } catch (error) {
+              console.error("Error adding task:", error);
+          }
+      }
+
+      function allowDrop(event) {
+          event.preventDefault();
+      }
+
+      function drag(event) {
+          event.dataTransfer.setData("text", event.target.id);
+      }
+
+      async function drop(event) {
+          event.preventDefault();
+          const taskId = event.dataTransfer.getData("text");
+          const taskElement = document.getElementById(taskId);
+          const newStatus = event.target.id; 
+
+          try {
+              const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+                  method: 'PUT',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ status: newStatus })
+              });
+
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              event.target.appendChild(taskElement);
+          } catch (error) {
+              console.error("Error updating task:", error);
+          }
+      }
+  </script>
+  </body>
+</html>

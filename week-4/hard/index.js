@@ -1,15 +1,38 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const path=require("path");
-const fs=require("fs");
+const path = require("path");
+const fs = require("fs");
+const cors = require('cors');
+
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
+const tasksFilePath = path.join(__dirname, 'data', 'tasks.json');
+const dataDir = path.dirname(tasksFilePath);
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir);
+}
+if (!fs.existsSync(tasksFilePath)) {
+    fs.writeFileSync(tasksFilePath, JSON.stringify([]), 'utf8');
+}
 
-const tasksFilePath=path.join(__dirname, 'data', 'tasks.json')
-app.use(express.json());
+app.use(cors()); 
+app.use(express.static(path.join(__dirname))); 
+app.use(express.json()); 
+app.get("/", (req, res) => {
+    const apiBaseUrl = `http://localhost:${port}`; 
+    const indexPath = path.join(__dirname, 'index.html'); 
+    fs.readFile(indexPath, 'utf8', (err, htmlContent) => {
+        if (err) {
+            console.error("Error reading index.html:", err);
+            return res.status(500).send("Error loading the page.");
+        }
 
+        const modifiedHtml = htmlContent.replace('__API_BASE_URL__', apiBaseUrl);
+        res.send(modifiedHtml);
+    });
+});
 app.get("/tasks", (req, res)=>{
     try{
         const raw=fs.readFileSync(tasksFilePath,'utf8');
