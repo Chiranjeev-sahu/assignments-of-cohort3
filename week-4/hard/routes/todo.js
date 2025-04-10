@@ -1,31 +1,87 @@
-const { Router } = require("express");
-const adminMiddleware = require("../middleware/user");
+import { Router } from "express";
+import { Todo } from '../../database/index.js';
+import { authenticateJwt, isAdmin } from "../middleware/auth"; // Adjust the path to the authentication middleware
 const router = Router();
-const { Todo } = require('./database/index.js')
-// todo Routes
-router.post('/', (req, res) => {
-    // Implement todo creation logic
+
+// Todo Routes
+// Protect all todo routes with JWT authentication and admin authorization
+router.use(authenticateJwt); // All routes require JWT authentication
+router.use(isAdmin); // All routes require admin authorization
+
+// Route to create a new todo
+router.post('/', async (req, res) => {
+    try {
+        const { content, createdBy, priority, complete} = req.body;
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required to the DB' });
+        }
+        const newTodo = await Todo.create({ content, createdBy, priority, complete });
+        res.status(201).json(newTodo);
+    } catch (error) {
+        console.error('Error creating todo:', error);
+        res.status(500).json({ message: 'Failed to create todo: ' + error.message });
+    }
 });
 
-router.put('/', adminMiddleware, (req, res) => {
-    // Implement update todo  logic
+// Route to get all todos
+router.get('/', async (req, res) => {
+  try {
+    const todos = await Todo.find({}); // Get all todos
+    res.json(todos);
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    res.status(500).json({ message: 'Failed to fetch todos' });
+  }
 });
 
-router.delete('/', adminMiddleware, (req, res) => {
-    // Implement delete todo logic
+// Route to get a todo by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const todoId = req.params.id;
+        const todo = await Todo.findById(todoId);
+
+        if (!todo) {
+            return res.status(404).json({ message: 'Todo not found' });
+        }
+        res.json(todo);
+    } catch (error) {
+        console.error('Error fetching todo:', error);
+        res.status(500).json({ message: 'Failed to fetch todo' });
+    }
 });
 
-router.delete('/:id', adminMiddleware, (req, res) => {
-    // Implement delete todo by id logic
+// Route to update a todo
+router.put('/:id', async (req, res) => {
+    try {
+        const todoId = req.params.id;
+        const updatedData = req.body;
+        const updatedTodo = await Todo.findByIdAndUpdate(todoId, updatedData, { new: true });
+
+        if (!updatedTodo) {
+            return res.status(404).json({ message: 'Todo not found' });
+        }
+        res.json(updatedTodo);
+    } catch (error) {
+        console.error('Error updating todo:', error);
+        res.status(500).json({ message: 'Failed to update todo' });
+    }
 });
 
+// Route to delete a todo
+router.delete('/:id', async (req, res) => {
+    try {
+        const todoId = req.params.id;
+        const deletedTodo = await Todo.findByIdAndDelete(todoId);
 
-router.get('/', adminMiddleware, (req, res) => {
-    // Implement fetching all todo logic
+        if (!deletedTodo) {
+            return res.status(404).json({ message: 'Todo not found' });
+        }
+
+        res.json({ message: 'Todo deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting todo:', error);
+        res.status(500).json({ message: 'Failed to delete todo' });
+    }
 });
 
-router.get('/:id', adminMiddleware, (req, res) => {
-    // Implement fetching todo by id logic
-});
-
-module.exports = router;
+export default router;
