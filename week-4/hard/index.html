@@ -68,9 +68,61 @@
   <body>
     <h1>Taskify - Task Manager</h1>
 
-    <div class="add-task">
-      <input type="text" id="taskInput" placeholder="Enter task..." />
-      <button onclick="addTask()">Add Task</button>
+    <h1>Taskify - Task Manager</h1>
+
+    <div id="auth-section">
+        <h2>Signup</h2>
+        <form id="signup-form">
+            <input type="text" id="signup-username" placeholder="Username" required />
+            <input type="email" id="signup-email" placeholder="Email" required />
+            <input type="password" id="signup-password" placeholder="Password" required />
+            <button type="submit">Sign Up</button>
+            <p id="signup-message"></p>
+        </form>
+
+        <h2>Login</h2>
+        <form id="login-form">
+            <input type="text" id="login-username" placeholder="Username" required />
+            <input type="password" id="login-password" placeholder="Password" required />
+            <button type="submit">Log In</button>
+            <p id="login-message"></p>
+        </form>
+        <button id="toggle-auth">Switch to Task View</button>
+    </div>
+
+    <div id="task-section" style="display: none;">
+        <div class="add-task">
+            <input type="text" id="taskInput" placeholder="Enter task..." />
+            <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <div class="board">
+            <div
+                class="column"
+                id="todo"
+                ondrop="drop(event)"
+                ondragover="allowDrop(event)"
+            >
+                <div class="column-header">To Do</div>
+            </div>
+            <div
+                class="column"
+                id="in-progress"
+                ondrop="drop(event)"
+                ondragover="allowDrop(event)"
+            >
+                <div class="column-header">In Progress</div>
+            </div>
+            <div
+                class="column"
+                id="completed"
+                ondrop="drop(event)"
+                ondragover="allowDrop(event)"
+            >
+                <div class="column-header">Completed</div>
+            </div>
+        </div>
+        <button onclick="logout()">Logout</button>
     </div>
 
     <div class="board">
@@ -101,15 +153,122 @@
     </div>
 
     <script>
-      const API_BASE_URL = '__API_BASE_URL__';
+      const API_BASE_URL = 'http://localhost:3000';
+      let authToken = localStorage.getItem('authToken');
+
+      const authSection = document.getElementById('auth-section');
+      const taskSection = document.getElementById('task-section');
+      const toggleAuthButton = document.getElementById('toggle-auth');
+
+      function updateAuthUI() {
+          if (authToken) {
+              authSection.style.display = 'none';
+              taskSection.style.display = 'block';
+              loadTasks();
+          } else {
+              authSection.style.display = 'block';
+              taskSection.style.display = 'none';
+          }
+      }
+
+      document.addEventListener('DOMContentLoaded', updateAuthUI);
+
+      document.getElementById('signup-form').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const username = document.getElementById('signup-username').value;
+          const email = document.getElementById('signup-email').value;
+          const password = document.getElementById('signup-password').value;
+          const messageElement = document.getElementById('signup-message');
+
+          try {
+              const response = await fetch(`${API_BASE_URL}/signup`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ username, password, email })
+              });
+
+              const data = await response.json();
+              messageElement.textContent = data.message;
+              if (response.ok) {
+                  alert('Signup successful! Please log in.');
+                  document.getElementById('signup-form').reset();
+              } else {
+                  console.error('Signup failed:', data);
+              }
+          } catch (error) {
+              console.error('Error signing up:', error);
+              messageElement.textContent = 'An error occurred during signup.';
+          }
+      });
+
+      document.getElementById('login-form').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const username = document.getElementById('login-username').value;
+          const password = document.getElementById('login-password').value;
+          const messageElement = document.getElementById('login-message');
+
+          try {
+              const response = await fetch(`${API_BASE_URL}/login`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ username, password })
+              });
+
+              const data = await response.json();
+              messageElement.textContent = data.message;
+              if (response.ok && data.token) {
+                  authToken = data.token;
+                  localStorage.setItem('authToken', authToken);
+                  updateAuthUI();
+                  document.getElementById('login-form').reset();
+              } else {
+                  console.error('Login failed:', data);
+              }
+          } catch (error) {
+              console.error('Error logging in:', error);
+              messageElement.textContent = 'An error occurred during login.';
+          }
+      });
+
+      toggleAuthButton.addEventListener('click', () => {
+          authToken = localStorage.getItem('authToken');
+          updateAuthUI();
+      });
+
+      function logout() {
+          authToken = null;
+          localStorage.removeItem('authToken');
+          updateAuthUI();
+      }
 
       async function loadTasks() {
+          if (!authToken) {
+              console.log('Not authenticated to load tasks.');
+              return;
+          }
           try {
-              const response = await fetch(`${API_BASE_URL}/tasks`);
+              const response = await fetch(`${API_BASE_URL}/tasks`, {
+                  headers: {
+                      'Authorization': `Bearer ${authToken}` // Include token in headers
+                  }
+              });
               if (!response.ok) {
+                  if (response.status === 401 || response.status === 403) {
+                      alert('Authentication failed. Please log in again.');
+                      logout();
+                      return;
+                  }
                   throw new Error(`HTTP error! status: ${response.status}`);
               }
               const tasks = await response.json();
+
+              document.getElementById('todo').innerHTML = '<div class="column-header">To Do</div>';
+              document.getElementById('in-progress').innerHTML = '<div class="column-header">In Progress</div>';
+              document.getElementById('completed').innerHTML = '<div class="column-header">Completed</div>';
 
               tasks.forEach(task => {
                   const taskElement = document.createElement('div');
@@ -133,6 +292,10 @@
       }
 
       async function addTask() {
+          if (!authToken) {
+              alert('Please log in to add tasks.');
+              return;
+          }
           const taskInput = document.getElementById('taskInput');
           const taskText = taskInput.value.trim();
 
@@ -145,12 +308,18 @@
               const response = await fetch(`${API_BASE_URL}/tasks`, {
                   method: 'POST',
                   headers: {
-                      'Content-Type': 'application/json'
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${authToken}` // Include token in headers
                   },
                   body: JSON.stringify({ text: taskText })
               });
 
               if (!response.ok) {
+                  if (response.status === 401 || response.status === 403) {
+                      alert('Authentication failed. Please log in again.');
+                      logout();
+                      return;
+                  }
                   throw new Error(`HTTP error! status: ${response.status}`);
               }
 
@@ -170,7 +339,7 @@
                   console.error("Column with ID 'todo' not found.");
               }
 
-              taskInput.value = ''; 
+              taskInput.value = '';
 
           } catch (error) {
               console.error("Error adding task:", error);
@@ -186,21 +355,31 @@
       }
 
       async function drop(event) {
+          if (!authToken) {
+              alert('Please log in to update task status.');
+              return;
+          }
           event.preventDefault();
           const taskId = event.dataTransfer.getData("text");
           const taskElement = document.getElementById(taskId);
-          const newStatus = event.target.id; 
+          const newStatus = event.target.id;
 
           try {
               const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
                   method: 'PUT',
                   headers: {
-                      'Content-Type': 'application/json'
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${authToken}` // Include token in headers
                   },
                   body: JSON.stringify({ status: newStatus })
               });
 
               if (!response.ok) {
+                  if (response.status === 401 || response.status === 403) {
+                      alert('Authentication failed. Please log in again.');
+                      logout();
+                      return;
+                  }
                   throw new Error(`HTTP error! status: ${response.status}`);
               }
               event.target.appendChild(taskElement);
@@ -209,5 +388,7 @@
           }
       }
   </script>
+    </script>
+
   </body>
 </html>

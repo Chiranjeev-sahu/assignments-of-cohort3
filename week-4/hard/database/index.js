@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/taskifyDB', {
   useNewUrlParser: true,
@@ -9,7 +9,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/taskifyDB
 
 // Define schemas
 
-const UserSchema =new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     username: {
       type: String,
       required: [true, 'Username is required'],
@@ -60,13 +60,8 @@ const TodoSchema = new mongoose.Schema({
       required: true // Ensure every todo has a creator
     }
   }, { timestamps: true });
-  
-  export const Todo = mongoose.model('Todo', todoSchema);
 
 const User = mongoose.model('User', UserSchema);
 const Todo = mongoose.model('Todo', TodoSchema);
 
-module.exports = {
-    User,
-    Todo
-}
+export { User, Todo };

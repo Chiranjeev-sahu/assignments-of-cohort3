@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { Todo } from '../../database/index.js';
-import { authenticateJwt, isAdmin } from "../middleware/auth"; // Adjust the path to the authentication middleware
-const router = Router();
+import { authenticateJwt, isAdmin } from "../middleware/user.js";const router = Router();
 
 // Todo Routes
 // Protect all todo routes with JWT authentication and admin authorization

@@ -2,8 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../database/index.js";
-import { authenticateJwt, SECRET } from "../middleware/auth";
-
+import { authenticateJwt, SECRET } from "../middleware/user.js";
 const router = Router();
 
 router.post("/signup", async (req, res) => {
