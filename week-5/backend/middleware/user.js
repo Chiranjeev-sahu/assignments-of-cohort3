@@ -1,42 +1,42 @@
-const jwt=require("jsonwebtoken");
-const dotenv=require("dotenv");
-dotenv.config();
-const JWT_SECRET=process.env.JWT_SECRET;
-const fs = require("fs");
-const path=require("path");
-const userModel=require("../database/db.js")
+const jwt = require("jsonwebtoken");
+const { UserModel } = require("../db/models");
+const JWT_SECRET = process.env.JWT_SECRET;
 
-todoJson=path.join(__dirname,"../database/todos.json");
-let allUserData=[];
-
-async function userMiddleware(req,res,next){
-    reqToken=req.headers.authorization;
-    if(reqToken){
-        try{
-            let username=jwt.verify(reqToken,JWT_SECRET).username;
-            let userFound=await userModel.findOne({username:username})
-            if(userFound){
-                req.username=username;
-                req.userData=userFound;
-                next();
-            }
-            else{
-                res.status(404).json({
-                    message:"User Not Found"
-                })
-            }
-        }
-        catch(err){
-            res.status(401).json({
-                message: "Invalid Token given"+err
-            })
-        }
-    }
-    else{
-        res.status(302).send({
-            message: 'You Cant Acess this resourse without logging in!!!!!!'
+async function authMiddleware(req, res, next) {
+    let token = req.header('Authorization');
+    if (!token || !token.startsWith('Bearer ')) {
+        return res.status(401).json({ 
+            message: 'Authentication token required. Please log in.'
         });
+    }
+    token = token.slice(7);
+
+    try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        const userIdFromToken = payload.userId; 
+        const userFound = await UserModel.findById(userIdFromToken); 
+        
+        if (!userFound) {
+            return res.status(401).json({ 
+                message: "Invalid token or user not found. Please log in again."
+            });
+        }
+
+        req.userId = userFound._id;     
+        req.user = userFound;
+
+        next();
+
+    } catch (err) {
+        console.error('JWT Verification Error:', err); 
+        let errorMessage = "Authentication failed. Please log in again.";
+        if (err.name === 'TokenExpiredError') {
+            errorMessage = 'Your session has expired. Please log in again.';
+        } else if (err.name === 'JsonWebTokenError') {
+            errorMessage = 'Invalid token. Please log in again.';
+        }
+        return res.status(401).json({ message: errorMessage });
     }
 }
 
-module.exports=userMiddleware;
+module.exports = authMiddleware;

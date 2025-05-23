@@ -1,36 +1,33 @@
+require("dotenv").config();
+
 const express = require("express");
- const dotenv = require("dotenv");
- const cors=require("cors");
- dotenv.config();
- const routes=require("./routes/todo");
- const userRoutes=require("./routes/user");
- const path = require("path");
- 
- const app = express();
- const port = process.env.PORT;
- 
- app.use(express.json());
- // app.use(cors());
- app.use(express.static(path.join(__dirname,'../public')));
- 
- app.use(userRoutes);
- app.use(routes);//this middleware allows acess to  the modular routes i've created
- 
- app.get("/healthy", (req, res)=> res.send("I am Healthy"));
- 
- //  start writing your routes here
- app.get("*",(req,res)=>{
-     res.status(404).sendFile(path.join(__dirname,"../public/notFound.html"))
- })
- 
- // app.get('/home',  (req, res) => {
- //     // Implement logic for getting todos for a user
- //     res.sendFile(path.join(__dirname,"../../public/landing.html"));
- // });
- 
- 
- app.listen(port, ()=> console.log(`server is running at http://localhost:${port}`));
- 
- setInterval(()=>{
-     console.log(".");
- },5000)
+const cors = require("cors"); 
+const connectDB = require("./db/config"); 
+const userRoutes = require("./routes/user"); 
+const todoRoutes = require("./routes/todo");
+
+const app = express();
+const port = process.env.PORT || 3000; 
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+connectDB();
+
+app.use('/api/auth', userRoutes);
+app.use('/api/todos', todoRoutes);
+
+app.get('/', (req, res) => {
+    res.send('Backend server is running!');
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke on the server!'); 
+});
+
+
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+});
