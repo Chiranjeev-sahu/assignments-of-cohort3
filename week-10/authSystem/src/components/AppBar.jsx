@@ -1,8 +1,12 @@
 import React from 'react'
 
-const AppBar = () => {
+const AppBar = ({ username, handleLogout }) => {
   return (
-    <div>AppBar</div>
+    <div>
+      <p>Auth system demo</p>
+      <p>welcome <span>{username || "Anon"}</span>!</p>
+      {username && <button onClick={handleLogout}>Logout</button>}
+    </div>
   )
 }
 
